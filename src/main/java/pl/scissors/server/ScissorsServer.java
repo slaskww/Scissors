@@ -22,7 +22,9 @@ public class ScissorsServer implements Runnable {
             this.server = new ServerSocket();
             this.server.bind(new InetSocketAddress("localhost", port));
             this.port = port;
-            this.exec = Executors.newCachedThreadPool();
+            this.exec = Executors.newFixedThreadPool(5);
+            run();
+
         } catch (BindException e){
             System.out.println("Nie udalo sie zbindowac serwera");
             e.printStackTrace();
