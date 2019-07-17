@@ -92,7 +92,7 @@ public class ScissorsClient extends JFrame implements ActionListener {
 
             writer.println(playersChoice);
             writer.flush();
-            ta.append("Player: I get " + playersChoice + "\n");
+            ta.append("Player: I choose " + playersChoice + "\n");
             lineToGet = reader.readLine();
             ta.append(lineToGet + "\n");
 

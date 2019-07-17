@@ -26,11 +26,13 @@ public class GameHandler implements Runnable {
         firstDefeatsSecond = new HashMap<>();
         random = new SecureRandom();
         fillWithOptions();
-        //run();
+        run();
     }
 
     @Override
     public void run() {
+
+        System.out.println("run() method is starting...");
 
         try {
 
@@ -73,7 +75,7 @@ public class GameHandler implements Runnable {
         try {
             socket.shutdownInput();
             socket.shutdownOutput();
-            System.out.println("in closeClient()");
+            System.out.println("I am closing the socket...");
 
 
 
