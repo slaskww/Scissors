@@ -26,18 +26,16 @@ public class GameHandler implements Runnable {
         firstDefeatsSecond = new HashMap<>();
         random = new SecureRandom();
         fillWithOptions();
-        run();
     }
 
     @Override
     public void run() {
 
-        System.out.println("run() method is starting...");
 
-        try {
+        try (Socket client = this.socket ){
 
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+            reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
+            writer = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
             writer.println("Server: Welcome to the game!\nServer: Choose one of the following options and try to win.\nServer: But...choose wisely, I know what you are thinking about.\n");
             writer.flush();
             String lineToSend;
@@ -62,7 +60,7 @@ public class GameHandler implements Runnable {
 
 
         } catch (IOException e) {
-            System.out.println("Blad We/Wy");
+            System.out.println("I/O Exception");
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -75,7 +73,6 @@ public class GameHandler implements Runnable {
         try {
             socket.shutdownInput();
             socket.shutdownOutput();
-            System.out.println("I am closing the socket...");
 
 
 

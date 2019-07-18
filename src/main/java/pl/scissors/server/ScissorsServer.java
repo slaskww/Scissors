@@ -42,10 +42,12 @@ public class ScissorsServer implements Runnable {
 
         while(true){
 
-            try (Socket socket = server.accept()){
+            try {
+                Socket socket = server.accept();
                 System.out.println("Client " + socket.getLocalAddress().toString() + ":" + socket.getPort() + " connected: ");
                 exec.execute(new GameHandler(socket));
 
+                System.out.println("Za exec:");
             } catch (IOException e){
                 System.out.println("Blad I/O");
                 e.printStackTrace();

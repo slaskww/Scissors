@@ -42,6 +42,7 @@ public class ScissorsClient extends JFrame implements ActionListener {
             this.reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             this.writer = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
             ta.append("~Successfully connected to server.\n");
+            TimeUnit.SECONDS.sleep(2);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
