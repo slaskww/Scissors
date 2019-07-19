@@ -1,26 +1,41 @@
 package pl.scissors.server;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class ScissorsServer implements Runnable {
 
 
-    private ServerSocket server;
+    private ServerSocket gameServer;
+    private ServerSocket statsServer;
     private int port;
     private ExecutorService exec;
+    public static ConcurrentHashMap<String, Scores> scores = new ConcurrentHashMap<>(); //ConcurrentHashMap class is thread-safe i.e. multiple thread can operate on a single object without any complications
+
 
 
     public ScissorsServer(int port) {
-
         try{
-            this.server = new ServerSocket();
-            this.server.bind(new InetSocketAddress("localhost", port));
+            this.gameServer = new ServerSocket();
+            this.gameServer.bind(new InetSocketAddress("localhost", port));
+
+            this.statsServer = new ServerSocket(8013);
+
             this.port = port;
             this.exec = Executors.newFixedThreadPool(5);
             run();
@@ -43,7 +58,7 @@ public class ScissorsServer implements Runnable {
         while(true){
 
             try {
-                Socket socket = server.accept();
+                Socket socket = gameServer.accept();
                 System.out.println("Client " + socket.getLocalAddress().toString() + ":" + socket.getPort() + " connected: ");
                 exec.execute(new GameHandler(socket));
 
@@ -54,7 +69,6 @@ public class ScissorsServer implements Runnable {
             }
 
         }
-
     }
 
     public static void main(String[] args) {
@@ -64,5 +78,71 @@ public class ScissorsServer implements Runnable {
         runServer.start();
     }
 
+    public static  void playerWin(String login){
+        scores.putIfAbsent(login, new Scores(0,0));
 
+     /*If the specified key is not already associated with a
+      (non-null) value, associates it with the given value (scores.get(login)).
+      Otherwise, replaces the value with the results of the given
+      remapping function*/
+
+        scores.merge(login, scores.get(login), (v1, v2) -> new Scores(v1.getWinnings() + 1, v1.getLosses()));
+        System.out.println(login + ": " + scores.get(login).toString());
+
+    }
+
+    public static  void playerLose(String login){
+        scores.putIfAbsent(login, new Scores(0,0));
+        scores.merge(login, scores.get(login), (v1, v2) -> new Scores(v1.getWinnings(), v1.getLosses() + 1));
+        System.out.println(login + ": " + scores.get(login).toString());
+    }
+
+    private void handleStatsRequest(){
+
+      Runnable statsRequestThread = new Runnable() {
+          @Override
+          public void run() {
+
+              while(true){
+
+                  try {
+                      Socket player = new Socket();
+                      player = statsServer.accept();
+                      System.out.println("New request from player " + player.getLocalAddress().toString() + ":" + player.getPort());
+                      PrintWriter statsWriter = new PrintWriter( new OutputStreamWriter(player.getOutputStream(), StandardCharsets.UTF_8 ));
+
+                      List<String> stats = getStats();
+
+                      for (String line :stats){
+
+                          System.out.println(line);
+                          statsWriter.println(line);
+                          statsWriter.flush();
+                      }
+
+                      player.shutdownOutput();
+                      statsWriter.close();
+                      player.close();
+                  } catch (IOException e){
+                      e.printStackTrace();
+                  }
+
+              }
+
+          }
+      };
+
+      new Thread(statsRequestThread).run();
+    }
+
+
+   public static List<String> getStats(){
+
+       return scores.entrySet().stream()
+               .sorted(Comparator.comparing((v) -> v.getValue().getWinnings()))
+               .limit(10)
+               .map(e -> e.getKey() + ", winnings: " + e.getValue().getWinnings() + ", losses: " + e.getValue().getLosses())
+               .collect(Collectors.toList());
+
+   }
 }

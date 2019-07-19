@@ -18,6 +18,7 @@ public class GameHandler implements Runnable {
     private HashMap<String, String> firstDefeatsSecond;
     private SecureRandom random;
     private String serversChoice;
+    private String playerLogin;
 
     public GameHandler(Socket client) {
 
@@ -36,7 +37,8 @@ public class GameHandler implements Runnable {
 
             reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             writer = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
-            writer.println("Server: Welcome to the game!\nServer: Choose one of the following options and try to win.\nServer: But...choose wisely, I know what you are thinking about.\n");
+            playerLogin = reader.readLine();
+            writer.println("\nServer: Welcome to the game " + playerLogin + "!\nServer: Choose one of the following options and try to win.\nServer: But...choose wisely, I know what you are thinking about.\n");
             writer.flush();
             String lineToSend;
             String lineToGet;
@@ -52,10 +54,24 @@ public class GameHandler implements Runnable {
                 }
 
                 Results result = checkWhoWins(lineToGet);
+                System.out.println("Result is: " + result.name());
                 TimeUnit.MILLISECONDS.sleep(0);
                 lineToSend = "Server: I have " + serversChoice + " so, You " + result.name();
                 writer.println(lineToSend);
                 writer.flush();
+
+                System.out.println("Ranking\n");
+                List<String> rank = ScissorsServer.getStats();
+
+                if (rank.size() > 0){
+                    for (int i = rank.size() -1; i >= 0 ;i--){
+                        System.out.println(rank.get(i));
+                    }
+
+                }
+
+
+
             }
 
 
@@ -104,9 +120,10 @@ public class GameHandler implements Runnable {
         }
 
         if (firstDefeatsSecond.get(serversChoice).equals(playersChoice)) {
+            ScissorsServer.playerLose(playerLogin);
             return Results.LOST;
         }
-
+        ScissorsServer.playerWin(playerLogin);
         return Results.WON;
     }
 }
