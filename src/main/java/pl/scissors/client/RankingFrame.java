@@ -2,6 +2,7 @@ package pl.scissors.client;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class RankingFrame extends JFrame {
 
@@ -10,13 +11,12 @@ public class RankingFrame extends JFrame {
     private JTextArea textArea;
     private JButton button;
 
-    public RankingFrame(String rankingList) throws HeadlessException {
+    public RankingFrame(List<String> rankingList) {
 
         createWindow(rankingList);
     }
 
-
-    private void createWindow(String text) {
+    private void createWindow(List<String> rankingList) {
 
         setType( Type.POPUP );
         setTitle( "Overall ranking" );
@@ -46,7 +46,7 @@ public class RankingFrame extends JFrame {
         textFieldConstraints.weightx = 1;
         textFieldConstraints.weighty = 1;
 
-        setText(text);
+        setText(rankingList);
         panel.add( textArea, textFieldConstraints );
 
         button = new JButton( "Close" );
@@ -72,8 +72,9 @@ public class RankingFrame extends JFrame {
         RankingFrame rank = new RankingFrame("Top 10 Players\n\n1. Ann\n2. Bob\n3. Annie\n4. Bobby\n5. Ann\n6. Bob\n7. Annie\n8. Bobby\n9. Bob\n10. Ann");
     }*/
 
-    public void setText(String text) {
-        textArea.setText( text );
+    public void setText(List<String> rankingList) {
+
+        rankingList.stream().forEach(s -> textArea.setText(s));
     }
 
 }

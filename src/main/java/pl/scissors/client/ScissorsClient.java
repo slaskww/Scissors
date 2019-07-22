@@ -9,6 +9,8 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ScissorsClient extends JFrame implements ActionListener {
@@ -16,7 +18,6 @@ public class ScissorsClient extends JFrame implements ActionListener {
     private Socket client;
     private Socket statsClient;
     private BufferedReader reader;
-    private BufferedReader statsReader;
     private PrintWriter writer;
     private int serverPort;
     private String serverIpAddress;
@@ -62,24 +63,28 @@ public class ScissorsClient extends JFrame implements ActionListener {
 
 
     private void connectToStats(){
-        try(Socket statsClient = new Socket()){
 
-            statsClient.connect(new InetSocketAddress(serverIpAddress, 8013));
-            this.statsReader = new BufferedReader(new InputStreamReader(statsClient.getInputStream(), StandardCharsets.UTF_8));
+        Runnable statsWindow = new Runnable() {
+            @Override
+            public void run() {
+                try(Socket statsClient = new Socket()){
 
-            StringBuilder messageBuilder = new StringBuilder();
-            messageBuilder.append(statsReader.readLine());
+                    statsClient.connect(new InetSocketAddress(serverIpAddress, 8013));
+                    BufferedReader statsReader = new BufferedReader(new InputStreamReader(statsClient.getInputStream(), StandardCharsets.UTF_8));
 
-            while (statsReader.ready()){
-                messageBuilder.append(statsReader.readLine());
+                    String statistics;
+                    statistics = statsReader.readLine();
+                   List<String> splittedMsg =  Arrays.asList(statistics.split("#"));
+                    new RankingFrame(splittedMsg);
+                    statsReader.close();
+
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
             }
+        };
+        new Thread(statsWindow).start();
 
-            new RankingFrame(messageBuilder.toString());
-            statsReader.close();
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
 
 
@@ -212,7 +217,7 @@ public class ScissorsClient extends JFrame implements ActionListener {
                 ta.append( lineToGet + "\n" );
             }
 
-            makeButtonsVisible();
+            showButtons();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -224,7 +229,7 @@ public class ScissorsClient extends JFrame implements ActionListener {
         ScissorsClient client = new ScissorsClient( 8012, "127.0.0.1" );
     }
 
-    private void makeButtonsVisible() {
+    private void showButtons() {
         panel.setVisible( true );
     }
 
