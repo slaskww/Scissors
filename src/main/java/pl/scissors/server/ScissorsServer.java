@@ -68,12 +68,7 @@ public class ScissorsServer implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
 
-        ScissorsServer server = new ScissorsServer( 8012 );
-        Thread runServer = new Thread( server, "Server" );
-        runServer.start();
-    }
 
     public static void playerWin(String login) {
         scores.putIfAbsent( login, new Scores( 0, 0 ) );
@@ -103,19 +98,19 @@ public class ScissorsServer implements Runnable {
                 while (true) {
 
                     try {
-                        Socket player = new Socket();
+                        Socket player;
                         player = statsServer.accept();
                         System.out.println( "New request from player " + player.getLocalAddress().toString() + ":" + player.getPort() );
                         PrintWriter statsWriter = new PrintWriter( new OutputStreamWriter( player.getOutputStream(), StandardCharsets.UTF_8 ) );
 
                         List<String> stats = getStats();
-                        statsWriter.append("Top players:");
+                        statsWriter.append("Top players:#");
 
-                        if (stats.size() > 0){
+
                             for (int i = stats.size() -1; i >= 0 ;i--){
                                 statsWriter.append(stats.get(i)).append("#");
                             }
-                        }
+
                         statsWriter.flush();
                         player.shutdownOutput();
                         statsWriter.close();
@@ -141,5 +136,12 @@ public class ScissorsServer implements Runnable {
                 .map( e -> e.getKey() + ", winnings: " + e.getValue().getWinnings() + ", losses: " + e.getValue().getLosses() )
                 .collect( Collectors.toList() );
 
+    }
+
+    public static void main(String[] args) {
+
+        ScissorsServer server = new ScissorsServer( 8012 );
+        Thread runServer = new Thread( server, "Server" );
+        runServer.start();
     }
 }

@@ -74,7 +74,7 @@ public class RankingFrame extends JFrame {
 
     public void setText(List<String> rankingList) {
 
-        rankingList.stream().forEach(s -> textArea.setText(s));
+        rankingList.stream().forEach(s -> textArea.append(s + "\n"));
     }
 
 }

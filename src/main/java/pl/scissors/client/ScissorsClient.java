@@ -72,10 +72,16 @@ public class ScissorsClient extends JFrame implements ActionListener {
                     statsClient.connect(new InetSocketAddress(serverIpAddress, 8013));
                     BufferedReader statsReader = new BufferedReader(new InputStreamReader(statsClient.getInputStream(), StandardCharsets.UTF_8));
 
-                    String statistics;
-                    statistics = statsReader.readLine();
-                   List<String> splittedMsg =  Arrays.asList(statistics.split("#"));
-                    new RankingFrame(splittedMsg);
+                    StringBuilder statistics = new StringBuilder();
+
+                    statsReader.lines().forEach(s -> statistics.append(s));
+
+                    List<String> statsList = Arrays.asList( statistics.toString().split( "#" ) );
+
+                    System.out.println("Staty:");
+                    statsList.stream().forEach( s -> System.out.println(s) );
+
+                    new RankingFrame(statsList);
                     statsReader.close();
 
                 } catch (IOException e){
